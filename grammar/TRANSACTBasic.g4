@@ -8,12 +8,19 @@ routine
     ;
 
 statements
-    : comments
+    : (statement) *
+    ;
+
+statement
+    : comment
+    | insertStatement
+    | matStatement
+    | dimStatement
     ;
 
 headers
     : comments
-    | componentPackage
+    | packageStatement
     ;
 
 // program rules
@@ -64,7 +71,7 @@ functionName
 
 functionHeading
     : FUNCTION functionName NEWLINE
-    | FUNCTION functionName LPAREN ioVariables RPAREN NEWLINE
+    | FUNCTION functionName LPAREN variables RPAREN NEWLINE
     ;
 
 functionEnd
@@ -73,7 +80,15 @@ functionEnd
     ;
 
 // common routine rules
-componentPackage
+insertStatement
+    : INSERT insertFile NEWLINE
+    ;
+
+insertFile
+    : IDENT
+    ;
+
+packageStatement
     : PACKAGE packageName NEWLINE
     ;
 
@@ -86,11 +101,7 @@ comments
     ;
 
 comment
-    : COMMENT
-    ;
-
-ioVariables
-    : variable (COMMA variable) *
+    : COMMENT NEWLINE
     ;
 
 variables
@@ -100,7 +111,37 @@ variables
 
 variable
     : IDENT
-    | MAT variable
+    ;
+
+dimStatement
+    : DIM variable LPAREN dimArray RPAREN NEWLINE
+    ;
+
+dimArray 
+    : integerValue (COMMA integerValue) *
+    ;
+
+matStatement
+    : MAT variable NEWLINE
+    ;
+
+// numeric rules
+numeric
+    : (sign) ? integerValue
+    | (sign) ? realValue
+    ;
+
+sign
+    : POSITIVE
+    | NEGATIVE
+    ;
+
+integerValue
+    : INTEGER
+    ;
+
+realValue
+    : REAL
     ;
 
 // common routine keywords
@@ -140,13 +181,30 @@ INSERT
     | '$INCLUDE'
     ;    
 
+// numeric keywords
+INTEGER
+    : ('0'..'9') +
+    ;
+
+REAL
+    : ('0'..'9') + (('.') ('0'..'9') + )
+    ;
+
+EQUALS
+    : '='
+    ;
+
+POSITIVE
+    : '+'
+    ;
+
+NEGATIVE
+    : '-'
+    ;
+
 // common keywords
 COMMENT
     : '*' ~[;\r\n] *
-    ;
-
-MAT
-    : 'MAT'
     ;
 
 COMMA
@@ -175,4 +233,14 @@ IDENT
 
 WHITESPACE 
     : [ \t] -> skip
+    ;
+
+// TRANSACT keywords
+DIM
+    : 'DIM'
+    | 'DIMENSION'
+    ;
+
+MAT
+    : 'MAT'
     ;
